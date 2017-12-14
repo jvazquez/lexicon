@@ -1,0 +1,2 @@
+# lexicon
+Lexicon aid tool.
