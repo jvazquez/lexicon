@@ -27,6 +27,7 @@ def upgrade():
     )
 
     op.create_table('related_terms',
+                    sa.Column('id', sa.Integer, primary_key=True),
                     sa.Column('term_id', sa.Integer, index=True),
                     sa.Column('related_term_id', sa.Integer, index=True),
                     sa.Column('created', sa.DateTime, nullable=True,
