@@ -99,3 +99,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+alembic.ini
+development.py
+testing.py
+production.py

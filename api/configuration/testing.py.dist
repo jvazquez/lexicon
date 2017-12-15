@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+:mod:`Testing` -- Testing configuration for lexicon
+===================================
+
+.. module:: testing
+   :platform: Unix, Windows
+   :synopsis: testing variables for flask application.
+.. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
+"""
+DEBUG = True
+TESTING = True
+SECRET_KEY = ''
+SQLALCHEMY_URL = ''

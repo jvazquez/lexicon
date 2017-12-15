@@ -1,0 +1,15 @@
+# -*- coding: utf-8 -*-
+"""
+:mod:`development` -- Development environment variables
+===================================
+
+.. module:: development
+   :platform: Unix, Windows
+   :synopsis: Provides the set of development variables for flask.
+.. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
+"""
+
+DEBUG = True
+TESTING = False
+SECRET_KEY = ''
+SQLALCHEMY_URL = ''
