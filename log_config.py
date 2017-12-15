@@ -17,5 +17,4 @@ import logconfig
 if os.path.exists('logging.json'):
     __config = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                             'logging.json')
-    logconfig.from_file(__config)
-
+    logconfig.from_json(__config)
