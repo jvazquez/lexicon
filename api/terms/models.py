@@ -8,7 +8,7 @@
    :synopsis: Handles the flask-sqlalchemy models
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
 """
-from lexicon.api import db
+from api import db
 
 
 class Terms(db.Model):
@@ -20,6 +20,7 @@ class Terms(db.Model):
 
 
 class RelatedTerms(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     term_id = db.Column(db.Integer, db.ForeignKey('terms.id'), nullable=False)
     related_term_id = db.Column(db.Integer, db.ForeignKey('terms.id'), nullable=False)
     created = db.Column(db.DateTime, nullable=True)

@@ -14,6 +14,7 @@ from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 
+
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
@@ -28,5 +29,9 @@ def create_app():
     configuration = os.getenv('CONFIGURATION', 'development')
     config_dir = os.path.abspath(os.path.dirname(__file__))
     app.config.from_pyfile('{}/configuration/{}.py'.format(config_dir, configuration))
+    db.init_app(app)
+    bcrypt.init_app(app)
+    from api.terms.endpoints import terms_bp
+    app.register_blueprint(terms_bp)
     return app
 
