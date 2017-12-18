@@ -8,7 +8,3 @@
    :synopsis: Set of unit tests and functional tests.
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
 """
-import os
-
-os['CONFIGURATION'] = 'testing'
-

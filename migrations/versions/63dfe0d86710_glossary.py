@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.create_table('terms',
         sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('word', sa.Unicode(length=100), index=True),
+        sa.Column('word', sa.Unicode(length=100), index=True, unique=True),
         sa.Column('definition', sa.UnicodeText(), nullable=False),
         sa.Column('created', sa.DateTime, nullable=True,
                   server_default=sa.func.now()),

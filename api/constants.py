@@ -15,5 +15,5 @@ _ = gettext.gettext
 CREATED_STATUS_CODE = 201
 UNSUPPORTED_MEDIA = 415
 ERROR = 400
-MISSING_PAYLOAD = _('Missing the required payload.')
+MISSING_PAYLOAD = _('No input data provided.')
 
