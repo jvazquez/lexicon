@@ -10,15 +10,23 @@
 """
 import factory
 
-from api.terms.models import Terms, RelatedTerms
+from app import db
+from terms.models import Terms, RelatedTerms
 
 
-class TermsFactory(factory.Factory):
+class TermsFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = Terms
+        sqlalchemy_session = db.session
+    id = factory.Sequence(lambda n: n + 1)
+    word = factory.Sequence(lambda n: u'Word {}'.format(n))
+    definition = factory.Sequence(lambda n: u'Definition {}'.format(n))
 
 
-class RelatedTermsFactory(factory.Factory):
+class RelatedTermsFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = RelatedTerms
+    id = factory.Sequence(lambda n: n + 1)
+    term = factory.SubFactory(TermsFactory)
+    related_term = factory.SubFactory(TermsFactory)
 

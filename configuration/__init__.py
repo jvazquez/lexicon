@@ -3,7 +3,7 @@
 :mod:`configuration` -- Lexicon configuration files
 ===================================
 
-.. module:: api
+.. module:: app
    :platform: Unix, Windows
    :synopsis: Crud for terms.
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>

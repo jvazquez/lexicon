@@ -37,9 +37,9 @@ def upgrade():
     )
 
     op.create_foreign_key('fk_term_term_id', 'related_terms', 'terms',
-                          ['term_id'], ['id'])
+                          ['term_id'], ['id'], ondelete='CASCADE')
     op.create_foreign_key('fk_term_related_term_id', 'related_terms', 'terms',
-                          ['related_term_id'], ['id'])
+                          ['related_term_id'], ['id'], ondelete='CASCADE')
 
 
 def downgrade():

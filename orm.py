@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-:mod:`lexicon` -- Lexicon is a flask webapp to store terms
+:mod:`module-name` -- description
 ===================================
 
-.. module:: lexicon
+.. module:: module-name
    :platform: Unix, Windows
-   :synopsis: Flask application to store terms
+   :synopsis: complete
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
 """
+from flask_sqlalchemy import SQLAlchemy
 
+db = SQLAlchemy()

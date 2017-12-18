@@ -8,4 +8,3 @@
    :synopsis: Terms provides the blueprint endpoint for this flask application.
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
 """
-

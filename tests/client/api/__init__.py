@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-:mod:`api` -- Api for the terms api
+:mod:`app` -- Api for the terms app
 ===================================
 
-.. module:: api
+.. module:: app
    :platform: Unix, Windows
    :synopsis: handle new terms
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
