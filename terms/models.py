@@ -23,6 +23,7 @@ class Terms(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.Unicode(length=100), index=True, unique=True)
     definition = db.Column(db.UnicodeText(), nullable=False)
+    deleted = db.Column(db.Boolean(), default=False)
     created = db.Column(db.DateTime, nullable=True)
     updated = db.Column(db.DateTime, nullable=True)
 
