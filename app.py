@@ -8,12 +8,14 @@
    :synopsis: complete
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
 """
-import coverage
 import os
 import unittest
 
 from flask import Flask
 from flask_bcrypt import Bcrypt
+
+import cover
+
 from orm import db
 from terms.endpoints import terms_bp
 
@@ -39,16 +41,14 @@ def test():
 @app.cli.command(with_appcontext=False)
 def cov():
     """Runs the unit tests with coverage."""
-    COV = coverage.coverage()
-    COV.start()
     tests = unittest.TestLoader().discover('tests')
     result = unittest.TextTestRunner(verbosity=2).run(tests)
     if result.wasSuccessful():
-        COV.stop()
-        COV.save()
+        cover.COV.stop()
+        cover.COV.save()
         print('Coverage Summary:')
-        COV.report()
-        COV.html_report()
-        COV.erase()
+        cover.COV.report()
+        cover.COV.html_report()
+        cover.COV.erase()
         return 0
     return 1
