@@ -26,7 +26,7 @@ _ = gettext.gettext
 logger = logging.getLogger(__name__)
 
 
-@terms_bp.route('/', methods=['POST'])
+@terms_bp.route('/term/', methods=['POST'])
 def create_term():
     json_data = request.get_json()
     if not json_data:
@@ -44,7 +44,7 @@ def create_term():
     return make_response(jsonify(data), CREATED_STATUS_CODE)
 
 
-@terms_bp.route('/relation/', methods=['POST'])
+@terms_bp.route('/related-terms/', methods=['POST'])
 def create_relation():
     json_data = request.get_json()
     if json_data is None:
