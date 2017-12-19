@@ -117,7 +117,7 @@ class TestCreateRelatedTermsEndpoint(TermsBaseTestCase):
         output = json.loads(response.data)
         self.assertEqual(output.get('message'), constants.TERM_NOT_FOUND)
 
-    def test_create_term_will_return(self):
+    def test_create_related_term_will_return_created_related_term_status(self):
         term = TermsFactory()
         related_term = TermsFactory()
         sample = {'term_id': term.id,
@@ -125,12 +125,13 @@ class TestCreateRelatedTermsEndpoint(TermsBaseTestCase):
         response = self.app.post('/related-terms/', data=json.dumps(sample),
                                  content_type='application/json')
         self.assertEqual(response.status_code,
-                         constants.CREATED_STATUS_CODE)
+                         constants.CREATED_RELATED_TERM)
         output = json.loads(response.data)
-        related_term_id = output[0].get('related_term_id')
-        term_id = output[0].get('term_id')
+        related_term_id = output.get('related_term').get('related_term_id')
+        term_id = output.get('related_term').get('term_id')
         self.assertEqual(related_term_id, related_term.id)
         self.assertEqual(term_id, term.id)
+        self.assertEqual(output.get('message'), constants.CREATED_RELATED_TERM)
 
 
 class TestDeleteTermEndpoint(TermsBaseTestCase):
@@ -163,3 +164,79 @@ class TestDeleteTermEndpoint(TermsBaseTestCase):
         self.assertEquals(output.get('message'), constants.TERM_DELETED)
         witness = Terms.query.get(tf.id)
         self.assertTrue(witness.deleted)
+
+
+class TestUpdateTermEndpoint(TermsBaseTestCase):
+    def test_will_return_404_when_trying_to_update_unexistent_term(self):
+        response = self.app.patch('/terms/{}'.format(100),
+                                  content_type='application/json')
+        self.assertEqual(response.status_code, constants.NOT_FOUND)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERM_NOT_FOUND)
+
+    def test_will_return_error_when_payload_is_missing(self):
+        term = TermsFactory()
+        response = self.app.patch('/terms/{}'.format(term.id),
+                                  content_type='application/json')
+        self.assertEqual(response.status_code, constants.ERROR)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.MISSING_PAYLOAD)
+
+    def test_will_update_when_payload_is_ok(self):
+        term = TermsFactory()
+        stub = {'word': 'A word', 'definition': 'Is what we need',
+                'extra': 'This will not affect'}
+        response = self.app.patch('/terms/{}'.format(term.id),
+                                  data=json.dumps(stub),
+                                  content_type='application/json')
+        self.assertEqual(response.status_code, constants.UPDATED)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERM_UPDATED)
+
+    def test_will_fail_when_name_is_not_none(self):
+        term = TermsFactory()
+        stub = {'word': None, 'definition': 'Is what we need',
+                'extra': 'This will not affect'}
+        response = self.app.patch('/terms/{}'.format(term.id),
+                                  data=json.dumps(stub),
+                                  content_type='application/json')
+        self.assertEqual(response.status_code, constants.ERROR)
+        output = json.loads(response.data)
+        expected = {'word': ['Field may not be null.']}
+        self.assertEquals(output.get('message'), expected)
+
+    def test_will_fail_when_name_is_not_space(self):
+        term = TermsFactory()
+        stub = {'word': ' ', 'definition': 'Is what we need',
+                'extra': 'This will not affect'}
+        response = self.app.patch('/terms/{}'.format(term.id),
+                                  data=json.dumps(stub),
+                                  content_type='application/json')
+        self.assertEqual(response.status_code, constants.ERROR)
+        output = json.loads(response.data)
+        expected = {'word': ['Word cannot be a space']}
+        self.assertEquals(output.get('message'), expected)
+
+    def test_will_fail_when_definition_is_none(self):
+        term = TermsFactory()
+        stub = {'word': 'Something', 'definition': None,
+                'extra': 'This will not affect'}
+        response = self.app.patch('/terms/{}'.format(term.id),
+                                  data=json.dumps(stub),
+                                  content_type='application/json')
+        self.assertEqual(response.status_code, constants.ERROR)
+        output = json.loads(response.data)
+        expected = {'definition': ['Field may not be null.']}
+        self.assertEquals(output.get('message'), expected)
+
+    def test_will_fail_when_definition_is_space(self):
+        term = TermsFactory()
+        stub = {'word': 'Something', 'definition': ' ',
+                'extra': 'This will not affect'}
+        response = self.app.patch('/terms/{}'.format(term.id),
+                                  data=json.dumps(stub),
+                                  content_type='application/json')
+        self.assertEqual(response.status_code, constants.ERROR)
+        output = json.loads(response.data)
+        expected = {'definition': ['Word cannot be a space']}
+        self.assertEquals(output.get('message'), expected)
