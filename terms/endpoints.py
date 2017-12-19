@@ -11,12 +11,17 @@
 import gettext
 import logging
 
+import werkzeug
+
 from flask import Blueprint, jsonify, make_response, request
+
 import constants
+
 from app import db
 from terms.models import Terms, TermsSchema
 from terms.models import RelatedTerms
 from terms.models import RelatedTermsSchema
+import marshmallow
 
 terms_bp = Blueprint('terms', __name__)
 _ = gettext.gettext
@@ -45,8 +50,8 @@ def create_term():
 def create_relation():
     json_data = request.get_json()
     if json_data is None:
-        make_response(jsonify({'message': constants.MISSING_PAYLOAD}),
-                      constants.ERROR)
+        return make_response(jsonify({'message': constants.MISSING_PAYLOAD}),
+                             constants.ERROR)
 
     if not json_data.get('term_id') or not json_data.get('related_term_id'):
         return make_response(jsonify({'message': constants.MISSING_PAYLOAD}),
@@ -64,15 +69,22 @@ def create_relation():
     db.session.add(rt)
     db.session.commit()
     related_terms_schema = RelatedTermsSchema()
-    data = related_terms_schema.dump(RelatedTerms.query.get(rt.id))
-    return make_response(jsonify(data), constants.CREATED_STATUS_CODE)
+    created_related_term = related_terms_schema.dump(
+        RelatedTerms.query.get(rt.id)
+    )
+    return make_response(
+        jsonify(
+            {
+                'message': constants.CREATED_RELATED_TERM,
+                'related_term': created_related_term.data
+            }
+        ),
+        constants.CREATED_STATUS_CODE
+    )
 
 
 @terms_bp.route('/terms/<int:_id>', methods=['DELETE'])
 def delete_term(_id):
-    if _id is None:
-        make_response(jsonify({'message': constants.MISSING_PAYLOAD}), ERROR)
-
     term = Terms.query.get(_id)
     if not term:
         return make_response(jsonify({'message': constants.TERM_NOT_FOUND}),
@@ -82,3 +94,43 @@ def delete_term(_id):
     db.session.commit()
     return make_response(jsonify({'message': constants.TERM_DELETED}),
                          constants.DELETED)
+
+
+@terms_bp.route('/terms/<int:_id>', methods=['PATCH'])
+def update_term(_id):
+    term = Terms.query.get(_id)
+    if not term:
+        return make_response(jsonify({'message': constants.TERM_NOT_FOUND}),
+                             constants.NOT_FOUND)
+    try:
+        json_data = request.get_json()
+        terms_schema = TermsSchema(strict=True)
+        terms_schema_data = terms_schema.load(json_data)
+        term.word = terms_schema_data.data.get('word')
+        term.definition = terms_schema_data.data.get('definition')
+        db.session.add(term)
+        db.session.commit()
+        updated_record = terms_schema.dump(Terms.query.get(term.id))
+        return make_response(
+            jsonify(
+                {
+                    "message": constants.TERM_UPDATED,
+                    "term": updated_record.data
+                }
+            ),
+            constants.UPDATED
+        )
+
+    except werkzeug.exceptions.BadRequest:
+        return make_response(jsonify({'message': constants.MISSING_PAYLOAD}),
+                             constants.ERROR)
+    except marshmallow.exceptions.ValidationError as error:
+        response = make_response(
+            jsonify(
+                    {
+                        'message': error.messages
+                    }
+            ),
+            constants.ERROR
+        )
+        return response

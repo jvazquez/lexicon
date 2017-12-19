@@ -74,6 +74,7 @@ class TermsSchema(Schema):
                          )
     definition = fields.String(required=True,
                                validate=[validate.Length(min=1), not_an_space])
+    deleted = fields.Boolean(dump_only=True)
     created = fields.DateTime(requred=False)
     updated = fields.DateTime(requred=False)
 
