@@ -18,12 +18,16 @@ depends_on = None
 
 def upgrade():
     op.create_table('terms',
-        sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('word', sa.Unicode(length=100), index=True, unique=True),
-        sa.Column('definition', sa.UnicodeText(), nullable=False),
-        sa.Column('created', sa.DateTime, nullable=True,
-                  server_default=sa.func.now()),
-        sa.Column('updated', sa.DateTime, nullable=True, onupdate=sa.func.now())
+                    sa.Column('id', sa.Integer, primary_key=True),
+                    sa.Column('word', sa.Unicode(length=100), index=True,
+                              unique=True),
+                    sa.Column('definition', sa.UnicodeText(), nullable=False),
+                    sa.Column('deleted', sa.Boolean(), nullable=True,
+                              default=False),
+                    sa.Column('created', sa.DateTime, nullable=True,
+                              server_default=sa.func.now()),
+                    sa.Column('updated', sa.DateTime, nullable=True,
+                              onupdate=sa.func.now())
     )
 
     op.create_table('related_terms',
@@ -45,4 +49,3 @@ def upgrade():
 def downgrade():
     op.drop_table('related_terms')
     op.drop_table('terms')
-
