@@ -240,3 +240,21 @@ class TestUpdateTermEndpoint(TermsBaseTestCase):
         output = json.loads(response.data)
         expected = {'definition': ['Word cannot be a space']}
         self.assertEquals(output.get('message'), expected)
+
+
+class TestGetTermEndpoint(TermsBaseTestCase):
+    def test_will_return_404_when_trying_to_get_unexistent_term(self):
+        response = self.app.get('/terms/{}'.format(100),
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.NOT_FOUND)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERM_NOT_FOUND)
+
+    def test_will_return_term_when_it_exists(self):
+        term = TermsFactory()
+        response = self.app.get('/terms/{}'.format(term.id),
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.FOUND)
+        # output = json.loads(response.data)
+        # self.assertEquals(output.get('message'), constants.TERM_NOT_FOUND)
+
