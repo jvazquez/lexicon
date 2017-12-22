@@ -24,8 +24,11 @@ class Terms(db.Model):
     word = db.Column(db.Unicode(length=100), index=True, unique=True)
     definition = db.Column(db.UnicodeText(), nullable=False)
     deleted = db.Column(db.Boolean(), default=False)
-    created = db.Column(db.DateTime, nullable=True)
-    updated = db.Column(db.DateTime, nullable=True)
+    created = db.Column(db.DateTime, nullable=True,
+                        server_default=db.func.now())
+    updated = db.Column(db.DateTime, nullable=True,
+                        server_default=db.func.now(),
+                        server_onupdate=db.func.now())
 
 
 class RelatedTerms(db.Model):
@@ -42,8 +45,11 @@ class RelatedTerms(db.Model):
     related_term = db.relationship('Terms', lazy='select',
                                    backref=db.backref('rt_term', lazy='joined'),
                                    foreign_keys=[related_term_id])
-    created = db.Column(db.DateTime, nullable=True)
-    updated = db.Column(db.DateTime, nullable=True)
+    created = db.Column(db.DateTime, nullable=True,
+                        server_default=db.func.now())
+    updated = db.Column(db.DateTime, nullable=True,
+                        server_default=db.func.now(),
+                        server_onupdate=db.func.now())
 
 
 def not_an_space(word):
