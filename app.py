@@ -8,6 +8,7 @@
    :synopsis: complete
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
 """
+import logging
 import os
 import unittest
 
@@ -15,10 +16,11 @@ from flask import Flask
 from flask_bcrypt import Bcrypt
 
 import cover
-
+import log_config
 from orm import db
 from terms.endpoints import terms_bp
 
+logger_debug = logging.getLogger('debug')
 app = Flask(__name__)
 configuration = os.getenv('CONFIGURATION', 'development')
 config_dir = os.path.abspath(os.path.dirname(__file__))

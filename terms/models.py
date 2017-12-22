@@ -87,4 +87,3 @@ class RelatedTermsSchema(Schema):
     related_term = fields.Nested(TermsSchema, only=['word'])
     created = fields.DateTime(requred=False)
     updated = fields.DateTime(requred=False)
-

@@ -8,6 +8,7 @@
    :synopsis: Handles the several endpoints of terms
 .. moduleauthor:: Jorge Omar Vazquez <jorgeomar.vazquez@gmail.com>
 """
+import collections
 import gettext
 import logging
 
@@ -51,18 +52,20 @@ def create_relation():
     try:
         json_data = request.get_json()
 
-        if not json_data.get('term_id') or not json_data.get('related_term_id'):
-            return make_response(jsonify({'message': constants.MISSING_PAYLOAD}),
-                                constants.ERROR)
-
         term = Terms.query.get(json_data.get('term_id'))
         if not term:
             return make_response(jsonify({'message': constants.TERM_NOT_FOUND}),
-                                constants.NOT_FOUND)
+                                 constants.NOT_FOUND)
         related_term = Terms.query.get(json_data['related_term_id'])
         if not related_term:
-            return make_response(jsonify({'message': constants.TERM_NOT_FOUND}),
-                                constants.NOT_FOUND)
+            return make_response(
+                    jsonify(
+                            {
+                                'message': constants.TERM_NOT_FOUND
+                            }
+                    ),
+                    constants.NOT_FOUND
+                    )
 
         rt = RelatedTerms(**json_data)
         db.session.add(rt)
@@ -144,4 +147,115 @@ def get_term(_id):
     if not term:
         return make_response(jsonify({'message': constants.TERM_NOT_FOUND}),
                              constants.NOT_FOUND)
+    if term.deleted:
+        return make_response(
+            jsonify(
+                {
+                    "message": constants.TERM_DELETED,
+                }
+            ), constants.DELETED
+        )
+    else:
+        term_data = TermsSchema().dump(term)
+        return make_response(
+            jsonify(
+                {
+                    "message": constants.TERM_FOUND,
+                    "term": term_data.data
+                }
+            ), constants.FOUND
+        )
 
+
+@terms_bp.route('/related-terms/<int:_id>', methods=['GET'])
+def get_related_term(_id):
+    related_term = RelatedTerms.query.get(_id)
+    if not related_term:
+        return make_response(
+                jsonify(
+                    {
+                        'message': constants.RELATED_TERM_NOT_FOUND
+                    }
+                ), constants.NOT_FOUND
+                )
+
+    if (related_term.term.deleted is True or
+            related_term.related_term.deleted is True):
+        return make_response(
+            jsonify(
+                {
+                    "message": constants.TERM_DELETED,
+                }
+            ), constants.DELETED
+        )
+
+    term_data = TermsSchema().dump(related_term)
+    return make_response(
+        jsonify(
+            {
+                "message": constants.TERM_FOUND,
+                "related_term": term_data.data
+            }
+        ), constants.FOUND
+    )
+
+
+@terms_bp.route('/terms', methods=['GET'])
+def get_terms():
+    terms = Terms.query.filter_by(deleted=False).all()
+    if len(terms):
+        terms_colletion = TermsSchema(many=True).dump(terms)
+        return make_response(
+            jsonify(
+                {
+                    "message": constants.TERMS_FOUND,
+                    "terms": terms_colletion.data
+                }
+                ),
+            constants.FOUND
+        )
+    else:
+        return make_response(
+            jsonify(
+                {
+                    "message": constants.TERMS_FOUND,
+                    "terms": []
+                }
+                ),
+            constants.FOUND
+        )
+
+
+@terms_bp.route('/related-terms', methods=['GET'])
+def get_related_terms():
+    related_terms = RelatedTerms.query.all()
+    if len(related_terms):
+        related_terms_colletion = (RelatedTermsSchema(many=True).
+                                   dump(
+                                       collections.deque(
+                                           filter(
+                                               lambda rt:
+                                               rt.term.deleted is False,
+                                               related_terms)
+                                           )
+                                       )
+                                   )
+        return make_response(
+            jsonify(
+                {
+                    "message": constants.RELATED_TERMS_FOUND,
+                    "related_terms": related_terms_colletion.data
+                }
+                ),
+            constants.FOUND
+        )
+    else:
+        return make_response(
+            jsonify(
+                {
+                    "message": constants.RELATED_TERMS_FOUND,
+                    "terms": []
+                }
+                ),
+            constants.FOUND
+        )

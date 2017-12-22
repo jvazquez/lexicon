@@ -18,9 +18,9 @@ import constants
 
 from app import app
 from terms.models import Terms, RelatedTerms
-from tests.fixtures.models import TermsFactory
+from tests.fixtures.models import TermsFactory, RelatedTermsFactory
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('debug')
 
 
 class TermsBaseTestCase(unittest.TestCase):
@@ -142,11 +142,6 @@ class TestDeleteTermEndpoint(TermsBaseTestCase):
         output = json.loads(response.data)
         self.assertEquals(output.get('message'), constants.TERM_NOT_FOUND)
 
-    def test_will_return_404_when_trying_to_delete_without_id(self):
-        response = self.app.delete('/terms',
-                                   content_type='application/json')
-        self.assertEqual(response.status_code, constants.NOT_FOUND)
-
     def test_will_return_deleted_when_trying_to_delete(self):
         tf = TermsFactory()
         response = self.app.delete('/terms/{}'.format(tf.id),
@@ -255,6 +250,123 @@ class TestGetTermEndpoint(TermsBaseTestCase):
         response = self.app.get('/terms/{}'.format(term.id),
                                 content_type='application/json')
         self.assertEqual(response.status_code, constants.FOUND)
-        # output = json.loads(response.data)
-        # self.assertEquals(output.get('message'), constants.TERM_NOT_FOUND)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERM_FOUND)
 
+    def test_will_not_return_term_when_is_deleted(self):
+        term = TermsFactory(deleted=True)
+        response = self.app.get('/terms/{}'.format(term.id),
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.DELETED)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERM_DELETED)
+
+
+class TestGetTermsEndpoint(TermsBaseTestCase):
+    def test_will_return_empty_list_when_there_are_no_terms(self):
+        response = self.app.get('/terms',
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.OK)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERMS_FOUND)
+
+    def test_will_return_list_with_terms(self):
+        term_one = TermsFactory()
+        term_two = TermsFactory()
+
+        response = self.app.get('/terms',
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.OK)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERMS_FOUND)
+        terms = output.get('terms')
+        self.assertEquals(2, len(terms))
+        received_terms = [term.get('word') for term in terms]
+        self.assertIn(term_one.word, received_terms)
+        self.assertIn(term_two.word, received_terms)
+
+    def test_will_not_return_a_deleted_term(self):
+        term_one = TermsFactory()
+        term_two = TermsFactory(deleted=True)
+
+        response = self.app.get('/terms',
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.OK)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERMS_FOUND)
+        terms = output.get('terms')
+        self.assertEquals(1, len(terms))
+        received_terms = [term.get('word') for term in terms]
+        self.assertIn(term_one.word, received_terms)
+        self.assertNotIn(term_two.word, received_terms)
+
+
+class TestGetRelatedTermsEndpoint(TermsBaseTestCase):
+    def test_will_return_empty_list_when_there_are_no_terms(self):
+        response = self.app.get('/related-terms',
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.OK)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.RELATED_TERMS_FOUND)
+
+    def test_will_return_list_with_terms(self):
+        related_term = RelatedTermsFactory()
+        response = self.app.get('/related-terms',
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.OK)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.RELATED_TERMS_FOUND)
+        related_terms = output.get('related_terms')
+        self.assertEquals(1, len(related_terms))
+        received_terms = [
+            term.get('id')
+            for term in related_terms
+        ]
+        self.assertIn(related_term.id, received_terms)
+
+    def test_will_not_return_a_deleted_term_in_related_terms(self):
+        deleted_term = TermsFactory(deleted=True, word='deleted')
+        related_term_with_deleted = RelatedTermsFactory(term=deleted_term)
+        related_term = RelatedTermsFactory()
+        response = self.app.get('/related-terms',
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.OK)
+        output = json.loads(response.data)
+        # logger.debug(output.get('related_terms'))
+        self.assertEquals(output.get('message'), constants.RELATED_TERMS_FOUND)
+        related_terms = output.get('related_terms')
+        self.assertEquals(1, len(related_terms))
+        received_terms = [
+            term.get('id')
+            for term in related_terms
+        ]
+        self.assertIn(related_term.id, received_terms)
+        self.assertNotIn(related_term_with_deleted.id, received_terms)
+
+
+class TestGetRelatedTermEndpoint(TermsBaseTestCase):
+    def test_will_return_404_when_trying_to_get_unexistent_related_term(self):
+        response = self.app.get('/related-terms/{}'.format(100),
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.NOT_FOUND)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'),
+                          constants.RELATED_TERM_NOT_FOUND)
+
+    def test_will_return_related_term_when_it_exists(self):
+        related_term = RelatedTermsFactory()
+        response = self.app.get('/related-terms/{}'.format(related_term.id),
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.FOUND)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERM_FOUND)
+        self.assertEquals(output.get('related_term')['id'], related_term.id)
+
+    def test_will_not_return_related_term_when_is_deleted(self):
+        term = TermsFactory(deleted=True)
+        related_term = RelatedTermsFactory(term=term)
+        response = self.app.get('/related-terms/{}'.format(related_term.id),
+                                content_type='application/json')
+        self.assertEqual(response.status_code, constants.DELETED)
+        output = json.loads(response.data)
+        self.assertEquals(output.get('message'), constants.TERM_DELETED)

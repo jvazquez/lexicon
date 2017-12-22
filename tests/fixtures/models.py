@@ -26,7 +26,7 @@ class TermsFactory(factory.alchemy.SQLAlchemyModelFactory):
 class RelatedTermsFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = RelatedTerms
+        sqlalchemy_session = db.session
     id = factory.Sequence(lambda n: n + 1)
     term = factory.SubFactory(TermsFactory)
     related_term = factory.SubFactory(TermsFactory)
-
