@@ -29,6 +29,16 @@ _ = gettext.gettext
 logger = logging.getLogger(__name__)
 
 
+@terms_bp.route('/', methods=['GET'])
+def alive():
+    return make_response(
+        jsonify(
+            {'message': constants.PING_RESPONSE_TEXT}
+        ),
+        constants.OK
+    )
+
+
 @terms_bp.route('/term/', methods=['POST'])
 def create_term():
     json_data = request.get_json()

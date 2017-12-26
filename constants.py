@@ -20,6 +20,7 @@ FOUND = 200
 MISSING_PAYLOAD = _('No input data provided.')
 NOT_FOUND = 404
 OK = 200
+PING_RESPONSE_TEXT = _('I am alive.')
 UNSUPPORTED_MEDIA = 415
 UPDATED = 200
 RELATED_TERM_CREATED = _('Related term created.')
