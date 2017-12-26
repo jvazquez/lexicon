@@ -79,8 +79,9 @@ class TestCreateTermEndpoint(TermsBaseTestCase):
         self.assertEqual(obtained_code, constants.ERROR)
 
     def test_create_validates_space_description(self):
-        response = self.app.post('/term/', data=json.dumps({'word': 'threading',
-                                                       'definition': ' '}),
+        response = self.app.post('/term/',
+                                 data=json.dumps({'word': 'threading',
+                                                  'definition': ' '}),
                                  content_type='application/json')
         obtained_code = response.status_code
         self.assertEqual(obtained_code, constants.ERROR)
@@ -91,6 +92,14 @@ class TestCreateTermEndpoint(TermsBaseTestCase):
                                  content_type='application/json')
         obtained_code = response.status_code
         self.assertEqual(obtained_code, constants.CREATED_STATUS_CODE)
+
+    def test_create_word_will_fail_due_to_repeated_term(self):
+        TermsFactory(word='asincrono')
+        stub = {'word': 'asincrono', 'definition': 'Thread of life'}
+        response = self.app.post('/term/', data=json.dumps(stub),
+                                 content_type='application/json')
+        obtained_code = response.status_code
+        self.assertEqual(obtained_code, constants.ERROR)
 
 
 class TestCreateRelatedTermsEndpoint(TermsBaseTestCase):
