@@ -23,6 +23,7 @@ from terms.models import Terms, TermsSchema
 from terms.models import RelatedTerms
 from terms.models import RelatedTermsSchema
 import marshmallow
+from sqlalchemy.exc import InvalidRequestError, IntegrityError
 
 terms_bp = Blueprint('terms', __name__)
 _ = gettext.gettext
@@ -48,13 +49,23 @@ def create_term():
     data, errors = TermsSchema().load(request.json)
     if errors:
         return make_response(jsonify(errors), constants.ERROR)
-
-    term = Terms(**json_data)
-    db.session.add(term)
-    db.session.commit()
-    term_schema = TermsSchema()
-    data = term_schema.dump(Terms.query.get(term.id))
-    return make_response(jsonify(data), constants.CREATED_STATUS_CODE)
+    try:
+        term = Terms(**json_data)
+        db.session.add(term)
+        db.session.commit()
+        term_schema = TermsSchema()
+        data = term_schema.dump(Terms.query.get(term.id))
+        return make_response(jsonify(data), constants.CREATED_STATUS_CODE)
+    except IntegrityError:
+        db.session.rollback()
+        return make_response(
+                jsonify(
+                    {
+                        'message': '{} is already created'.format(term.word)
+                    }
+                ),
+                constants.ERROR
+            )
 
 
 @terms_bp.route('/related-terms/', methods=['POST'])
